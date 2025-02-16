@@ -3,9 +3,10 @@ import requests
 import tempfile
 import os
 
-st.title("ASR Service – Whisper")
+st.title("ASR + TTS Service")
 
-# Nagrywanie dźwięku
+# --- ASR (Whisper) ---
+st.header("🎙️ Rozpoznawanie mowy (ASR)")
 audio_file = st.file_uploader("Wgraj plik audio", type=["wav", "mp3", "m4a"])
 
 if audio_file:
@@ -26,4 +27,23 @@ if audio_file:
         st.write(transcription)
     else:
         st.error("Błąd w transkrypcji. Sprawdź API.")
+
+# --- TTS (Coqui) ---
+st.header("🗣️ Synteza mowy (TTS)")
+text_input = st.text_area("Wpisz tekst do syntezy mowy")
+
+if st.button("🔊 Generuj mowę"):
+    if text_input:
+        response = requests.post("http://localhost:5000/synthesize", json={"text": text_input})
+
+        if response.status_code == 200:
+            output_audio_path = "output_speech.wav"
+            with open(output_audio_path, "wb") as f:
+                f.write(response.content)
+
+            st.audio(output_audio_path)
+        else:
+            st.error("Błąd w syntezie mowy.")
+    else:
+        st.warning("Wpisz tekst!")
 
