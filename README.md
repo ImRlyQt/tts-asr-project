@@ -14,5 +14,6 @@ This application provides speech-to-text (ASR) and text-to-speech (TTS) services
 - `streamlit run .\streamlit_app.py`
 
 ### Preview
-![image](https://github.com/user-attachments/assets/4c65715e-41de-4577-b7d3-5ab1e489c63e)
+![image](https://github.com/user-attachments/assets/b3dc5f91-2404-4dbf-9fcd-79cde5145542)
+
 
