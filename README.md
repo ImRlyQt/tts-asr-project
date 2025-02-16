@@ -1,4 +1,4 @@
-# Resume project
+# TTS and ASR project
 This application provides speech-to-text (ASR) and text-to-speech (TTS) services using Whisper for ASR and Coqui TTS for TTS.
 
 ### Features
