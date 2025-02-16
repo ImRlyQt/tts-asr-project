@@ -8,22 +8,28 @@ app = Flask(__name__)
 # Załaduj model Whisper
 whisper_model = whisper.load_model("base")
 
-# Załaduj model Coqui TTS
-tts_model = TTS("tts_models/en/ljspeech/tacotron2-DDC").to("cpu")
+# Modele TTS dla języków
+tts_models = {
+    "en": "tts_models/en/ljspeech/tacotron2-DDC",
+    "pl": "tts_models/pl/mai_female/vits"
+}
+
+# Załaduj model domyślnie na angielski
+tts_model = TTS(tts_models["en"]).to("cpu")
 
 @app.route("/transcribe", methods=["POST"])
 def transcribe_audio():
+    """Rozpoznawanie mowy z pliku audio"""
     if "file" not in request.files:
         return jsonify({"error": "Brak pliku audio"}), 400
 
     file = request.files["file"]
-    filepath = os.path.join("temp_aud.wav")
+    language = request.form.get("language", "en")  # Domyślnie angielski
+    filepath = "temp_audio.wav"
     file.save(filepath)
 
     # Przetwarzanie audio przez Whisper
-    result = whisper_model.transcribe(filepath)
-
-    # Usuwanie pliku po przetworzeniu
+    result = whisper_model.transcribe(filepath, language=language)
     os.remove(filepath)
 
     return jsonify({"transcription": result["text"]})
@@ -33,13 +39,20 @@ def transcribe_audio():
 def synthesize_speech():
     """Zamiana tekstu na mowę"""
     data = request.get_json()
-    if not data or "text" not in data:
-        return jsonify({"error": "Brak tekstu"}), 400
-
+    if not data or "text" not in data or "language" not in data:
+        return jsonify({"error": "Brak tekstu lub języka"}), 400
+    
     text = data["text"]
+    language = data["language"]
+
+     # Wybierz odpowiedni model TTS
+    if language not in tts_models:
+        return jsonify({"error": "Nieobsługiwany język"}), 400
+    
+    tts_model = TTS(tts_models[language]).to("cpu")
     output_path = "output_speech.wav"
 
-    # Ustawienie języka polskiego
+    # Generowanie mowy
     tts_model.tts_to_file(text=text, file_path=output_path)
 
     return send_file(output_path, as_attachment=True)
